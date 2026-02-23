@@ -68,14 +68,14 @@ module.exports = {
     config: {
         name: "meta",
         aliases: ["metaai", "metagen"],
-        version: "2.2",
-        author: "Neoaz ゐ",
+        version: "2.3",
+        author: "Neoaz ゐ",//credit churi korle tor mare cdi
         countDown: 20,
         role: 0,
-        longDescription: "Generate 4 images using Meta AI with aspect ratio support.",
+        longDescription: "Generate 4 images using Meta AI with persistence on selection.",
         category: "ai-image",
         guide: {
-            en: "{pn} <prompt> --ar <ratio>\nExample: {pn} a cybernetic forest --ar 16:9\nRatios: 1:1 (Square), 16:9 (Landscape), 9:16 (Vertical)"
+            en: "{pn} <prompt> --ar <ratio>\nExample: {pn} a cybernetic forest --ar 16:9"
         }
     },
 
@@ -84,7 +84,6 @@ module.exports = {
         if (!fullPrompt) return message.reply("Please provide a prompt.");
 
         let orientation = "SQUARE";
-        
         if (fullPrompt.includes("--ar 16:9")) {
             orientation = "LANDSCAPE";
             fullPrompt = fullPrompt.replace("--ar 16:9", "");
@@ -102,15 +101,9 @@ module.exports = {
 
         message.reaction("⏳", event.messageID);
 
-        const tempPaths = [];
-        let gridPath = '';
-
         try {
             const response = await axios.get(API_ENDPOINT, {
-                params: {
-                    prompt: prompt,
-                    orientation: orientation
-                },
+                params: { prompt, orientation },
                 timeout: 180000
             });
 
@@ -118,17 +111,18 @@ module.exports = {
             if (!data.success || !data.image_urls) throw new Error("Generation failed.");
 
             const imageUrls = data.image_urls.slice(0, 4);
+            const tempPaths = [];
 
             for (let i = 0; i < imageUrls.length; i++) {
                 const imgPath = await downloadImage(imageUrls[i], cacheDir, `meta_${Date.now()}_${i + 1}.png`);
                 tempPaths.push(imgPath);
             }
 
-            gridPath = path.join(cacheDir, `meta_grid_${Date.now()}.png`);
+            const gridPath = path.join(cacheDir, `meta_grid_${Date.now()}.png`);
             await createGridImage(tempPaths, gridPath);
 
             message.reply({
-                body: `✨ Prompt: ${prompt}\n📐 Ratio: ${orientation}\n\n📷 Reply with 1-4 or "all"`,
+                body: `✨ Prompt: ${prompt}\n📐 Ratio: ${orientation}\n\n📷 Reply with 1-4 to select, or "all" to get all.`,
                 attachment: fs.createReadStream(gridPath)
             }, (err, info) => {
                 if (!err) {
@@ -144,7 +138,6 @@ module.exports = {
             });
 
             message.reaction("✅", event.messageID);
-
         } catch (error) {
             message.reaction("❌", event.messageID);
             message.reply("Error: " + error.message);
@@ -166,13 +159,15 @@ module.exports = {
                     const imgPath = await downloadImage(Reply.imageUrls[i], cacheDir, `meta_all_${Date.now()}_${i}.png`);
                     selectedPaths.push(imgPath);
                 }
-                await message.reply({ body: "All images generated:", attachment: selectedPaths.map(p => fs.createReadStream(p)) });
+                await message.reply({ body: "All images:", attachment: selectedPaths.map(p => fs.createReadStream(p)) });
             } else {
                 const i = parseInt(userReply) - 1;
                 if (i >= 0 && i < Reply.imageUrls.length) {
                     const imgPath = await downloadImage(Reply.imageUrls[i], cacheDir, `meta_one_${Date.now()}.png`);
                     selectedPaths.push(imgPath);
                     await message.reply({ body: `Image ${i + 1}:`, attachment: fs.createReadStream(imgPath) });
+                } else {
+                    return message.reaction("❓", event.messageID);
                 }
             }
             message.reaction("✅", event.messageID);
@@ -180,11 +175,10 @@ module.exports = {
             message.reply("Error: " + e.message);
         } finally {
             setTimeout(async () => {
-                for (const p of [...selectedPaths, ...Reply.tempPaths, Reply.gridPath]) {
+                for (const p of selectedPaths) {
                     if (fs.existsSync(p)) await fs.unlink(p);
                 }
-            }, 10000);
-            global.GoatBot.onReply.delete(Reply.messageID);
+            }, 5000);
         }
     }
 };
