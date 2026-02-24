@@ -5,23 +5,21 @@ const stream = require('stream');
 const { promisify } = require('util');
 
 const pipeline = promisify(stream.pipeline);
-const API_ENDPOINT = "https://metakexbyneokex.fly.dev/animate";
+const API_ENDPOINT = "https://metabyneokex.vercel.app/videos/generate";
 const CACHE_DIR = path.join(__dirname, 'cache');
 
 module.exports = {
   config: {
     name: "animate",
     aliases: ["anim", "video", "genvid"],
-    version: "1.0",
-    author: "Neoaz ゐ",
+    version: "1.1",
+    author: "Neoaz ゐ",//creidt churi krle tor mare
     countDown: 30,
     role: 0,
-    longDescription: "Generate animated videos from text prompts using AI.",
+    longDescription: "Generate animated videos from text prompts using Meta AI.",
     category: "ai",
     guide: {
-      en: 
-        "{pn} <prompt>\n\n" +
-        "Example: {pn} a cat is swimming"
+      en: "{pn} <prompt>\n\nExample: {pn} waves crashing on a beach at sunset"
     }
   },
 
@@ -40,13 +38,13 @@ module.exports = {
     let tempFilePath;
 
     try {
-      const fullApiUrl = `${API_ENDPOINT}?prompt=${encodeURIComponent(prompt)}`;
+      const fullApiUrl = `${API_ENDPOINT}?prompt=${encodeURIComponent(prompt)}&orientation=VERTICAL`;
       
-      const apiResponse = await axios.get(fullApiUrl, { timeout: 120000 });
+      const apiResponse = await axios.get(fullApiUrl, { timeout: 150000 });
       const data = apiResponse.data;
 
       if (!data.success || !data.video_urls || data.video_urls.length === 0) {
-        throw new Error(data.message || "API returned no video.");
+        throw new Error("API failed");
       }
 
       const videoUrl = data.video_urls[0];
@@ -64,18 +62,18 @@ module.exports = {
       api.setMessageReaction("✅", event.messageID, () => {}, true);
       
       await message.reply({
-        body: "Video generated 🐦",
+        body: "Video generated 🎬",
         attachment: fs.createReadStream(tempFilePath)
       });
 
     } catch (error) {
       api.setMessageReaction("❌", event.messageID, () => {}, true);
-      console.error("Animate Command Error:", error);
       message.reply("Failed to generate video.");
-
     } finally {
       if (tempFilePath && fs.existsSync(tempFilePath)) {
-        fs.unlinkSync(tempFilePath);
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (err) {}
       }
     }
   }
