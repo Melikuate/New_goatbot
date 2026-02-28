@@ -18,11 +18,11 @@ module.exports = {
 		const categories = {};
 
 		const emojiMap = {
-			ai: "➥", "ai-image": "➥", group: "➥", system: "➥",
-			fun: "➥", owner: "➥", config: "➥", economy: "➥",
-			media: "➥", "18+": "➥", tools: "➥", utility: "➥",
-			info: "➥", image: "➥", game: "➥", admin: "➥",
-			rank: "➥", boxchat: "➥", others: "➥"
+			ai: "💌", "ai-image": "💌", group: "💌", system: "💌",
+			fun: "💌", owner: "💌", config: "💌", economy: "💌",
+			media: "💌", "18+": "💌", tools: "💌", utility: "💌",
+			info: "💌", image: "💌", game: "💌", admin: "💌",
+			rank: "💌", boxchat: "💌", others: "💌"
 		};
 
 		const cleanCategoryName = (text) => {
@@ -74,7 +74,7 @@ module.exports = {
 						const requiredRole = cmd.config.role !== undefined ? cmd.config.role : 0; 
 
 			return message.reply(
-				`☠️ 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗜𝗡𝗙𝗢 ☠️\n\n` +
+				` ✦ ━━━━ ⚡ 𝑻𝑬𝑺𝑳𝑨 𝑮𝑬𝑵𝑰𝑼𝑺 ⚡ ━━━━ ✦\n\n` +
 				`➥ Name: ${name}\n` +
 				`➥ Category: ${category || "Uncategorized"}\n` +
 				`➥ Description: ${desc}\n` +
@@ -89,7 +89,7 @@ module.exports = {
 		const formatCommands = (cmds) =>
 			cmds.sort().map((cmd) => `× ${cmd}`);
 
-		let msg = `━━━☠️ 𝗡𝗲𝗼𝗞𝗘𝗫 𝗔𝗜 ☠️━━━\n`;
+		let msg = `✦ ━━━━ ⚡ 𝑻𝑬𝑺𝑳𝑨 𝑮𝑬𝑵𝑰𝑼𝑺 ⚡ ━━━━ ✦\n`;
 		const sortedCategories = Object.keys(categories).sort();
 		for (const cat of sortedCategories) {
 			const emoji = emojiMap[cat] || "➥";
